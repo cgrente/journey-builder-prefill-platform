@@ -40,9 +40,10 @@ http://localhost:3000
 Create a `.env` file at the project root:
 
 ```env
-VITE_API_BASE_URL=http://localhost:3000
-VITE_TENANT_ID=123
-VITE_BLUEPRINT_ID=bp_456
+VITE_API_BASE_URL=
+VITE_TENANT_ID=
+VITE_BLUEPRINT_ID=
+VITE_BLUEPRINT_VERSION_ID=
 ```
 
 > Note: `.env` is intentionally not committed. Adjust values as needed.
