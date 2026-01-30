@@ -1,5 +1,7 @@
 # Journey Builder Prefill Platform
 
+![UI preview](docs/preview.png)
+
 A React + TypeScript implementation of the “Journey Builder” take-home challenge.  
 The goal is to fetch and display an Action Blueprint graph (a DAG of forms) and implement a UI to configure prefill mappings between forms.
 
