@@ -18,12 +18,14 @@ export function useBlueprintGraph() {
 
             try {
                 const graph = await getBlueprintGraph();
-                if (cancelled) return;
+                if (cancelled) 
+                    return;
 
                 setData(graph);
                 setStatus("success");
             } catch (err) {
-                if (cancelled) return;
+                if (cancelled) 
+                    return;
 
                 const message = 
                     err instanceof Error ? err.message : "Unknown error";

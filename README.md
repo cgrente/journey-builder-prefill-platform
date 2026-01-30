@@ -1,7 +1,7 @@
 # Journey Builder Prefill Platform
 
 A React + TypeScript implementation of the “Journey Builder” take-home challenge.  
-The goal is to fetch and display an Action Blueprint graph (a DAG of forms) and serve as the foundation for building a form prefill mapping UI.
+The goal is to fetch and display an Action Blueprint graph (a DAG of forms) and implement a UI to configure prefill mappings between forms.
 
 ## Tech stack
 
@@ -20,7 +20,7 @@ The goal is to fetch and display an Action Blueprint graph (a DAG of forms) and 
 
 ### 1) Start the mock server
 
-This project is designed to work with the Avantos mock server.
+This project is designed to work with the provided mock server.
 
 If the mock server lives inside this repo:
 
@@ -40,7 +40,7 @@ http://localhost:3000
 Create a `.env` file at the project root:
 
 ```env
-VITE_API_BASE_URL=
+VITE_BASE_URL=
 VITE_TENANT_ID=
 VITE_BLUEPRINT_ID=
 VITE_BLUEPRINT_VERSION_ID=
@@ -65,10 +65,17 @@ http://localhost:5173
 ## What’s implemented so far
 
 - Fetches the blueprint graph from the mock server
-- Handles loading and error states via a small custom hook
-- Renders a list of forms (name + id)
+- Builds an indexed representation of the graph for efficient traversal
+- Renders a list of form nodes
+- Allows selecting a form to configure its prefill mappings
+- Displays form fields and existing prefill configuration
+- Supports clearing and editing field mappings
+- Opens a modal to select a prefill source
+  - Direct dependency form fields
+  - Transitive dependency form fields
+  - Global data
+- Prefill state is scoped per form node
 
-This provides a clean vertical slice before introducing more complex UI and DAG traversal logic.
 
 ## Project structure (high level)
 
@@ -76,31 +83,23 @@ This provides a clean vertical slice before introducing more complex UI and DAG 
 src/
   features/
     blueprintGraph/
-      api/        # API calls (fetch blueprint graph)
-      model/      # Minimal domain types
-      state/      # Feature state (loading/error/data)
-      components/ # UI components
+      api/        # API calls
+      model/      # Domain types
+      services/   # Graph index, traversal, selectors
+      providers/  # Pluggable prefill source providers
+      state/      # Feature state (graph loading)
+      components/ # UI components (panel, modal)
   shared/
-    hooks/
     ui/
-    utils/
 ```
 
 ## Design notes
 
-- Feature-based structure keeps domain logic isolated and easy to extend
-- Data fetching is centralized in a small hook (`useBlueprintGraph`)
-- UI components remain “dumb” and declarative
-- Types are intentionally minimal: only what is needed at each step
-
-## Next steps
-
-Planned extensions:
-
-- Graph traversal utilities to compute direct vs transitive dependencies
-- Prefill mapping UI and selection modal
-- Pluggable data sources (form fields, globals, etc.)
-- Focused unit tests for graph traversal and providers
+- Feature-based structure keeps graph, traversal, and prefill logic scoped together
+- Graph traversal (direct vs transitive dependencies) is isolated in services
+- Prefill sources are implemented via a provider registry for easy extension
+- UI components are kept declarative and state is lifted where appropriate
+- Types model only the parts of the API that are actually used
 
 ## Scripts
 

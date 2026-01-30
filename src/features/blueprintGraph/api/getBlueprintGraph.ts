@@ -1,7 +1,7 @@
 import type { BlueprintGraph } from "../model/types";
 
 function buildBlueprintGraphUrl(): string {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const tenantId = import.meta.env.VITE_TENANT_ID;
   const blueprintId = import.meta.env.VITE_BLUEPRINT_ID;
   const blueprintVersionId = import.meta.env.VITE_BLUEPRINT_VERSION_ID;
@@ -12,7 +12,7 @@ function buildBlueprintGraphUrl(): string {
     );
   }
 
-  return baseUrl + '/' + tenantId + '/actions/blueprints/' + blueprintId + '/' + blueprintVersionId + '/graph';
+  return baseUrl + '/api/v1/' + tenantId + '/actions/blueprints/' + blueprintId + '/' + blueprintVersionId + '/graph';
 }
 
 export async function getBlueprintGraph(): Promise<BlueprintGraph> {
