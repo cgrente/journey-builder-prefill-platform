@@ -10,7 +10,9 @@ export function getFieldsForNode(index: GraphIndex, nodeId: string): FieldDescri
   if (!formDefId) return [];
 
   const formDef = index.formDefinitionById.get(formDefId);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fieldSchema: any = formDef?.field_schema;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const props: Record<string, any> | undefined = fieldSchema?.properties;
 
   if (!props) return [];

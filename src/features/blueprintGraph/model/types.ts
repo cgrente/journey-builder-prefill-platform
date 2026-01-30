@@ -29,5 +29,5 @@ export type BlueprintGraph = {
 export type FormDefinition = {
   id: FormDefinitionId;
   name: string;
-  field_schema?: any;
+  field_schema?: unknown;
 };
