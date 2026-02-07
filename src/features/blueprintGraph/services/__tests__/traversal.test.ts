@@ -51,8 +51,8 @@ describe("blueprint graph traversal", () => {
     const index = buildGraphIndex(graph);
     const depthMap = getDependencyDepths(index, "form-F");
 
-    let direct: NodeId[] = [];
-    let transitive: NodeId[] = [];
+    const direct: NodeId[] = [];
+    const transitive: NodeId[] = [];
 
     for ( const [nodeId, depth] of depthMap) {
       if (depth === 1) {
