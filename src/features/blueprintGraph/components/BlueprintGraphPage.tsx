@@ -1,19 +1,52 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useBlueprintGraph } from "../state/useBlueprintGraph";
 import { buildGraphIndex } from "../services/graphIndex";
 import { getGraphNodes, getNodeLabel } from "../services/selectors";
 import type { NodeId } from "../model/types";
 import { PrefillPanel } from "./PrefillPanel";
 import type { PrefillSource, PrefillStateByNode, NodePrefillState } from "../model/prefill";
+import { getCurrentUrl } from "../../../shared/utils/urlTools";
+
+const PREFILL_STORAGE_KEY = "journey-prefill:v1";
+
+function loadPrefillFromStorage(): PrefillStateByNode {
+  try {
+    const raw = localStorage.getItem(PREFILL_STORAGE_KEY);
+    if (!raw) return {};
+
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return {};
+
+    return parsed as PrefillStateByNode;
+  } catch {
+    // corrupt json or blocked access - error message
+    return {};
+  }
+}
+
+function savePrefillToStorage(state: PrefillStateByNode) {
+  try {
+    const stringify = JSON.stringify(state);
+    localStorage.setItem(PREFILL_STORAGE_KEY, stringify);
+  } catch {
+    // storage full / blocked etc..
+  }
+}
+
 
 export function BlueprintGraphPage() {
   const { data, isLoading, error } = useBlueprintGraph();
 
   const [selectedNodeId, setSelectedNodeId] = useState<NodeId | null>(null);
   const [prefillByNode, setPrefillByNode] = useState<PrefillStateByNode>({});
+  //const [prefillByNode, setPrefillByNode] = useState<PrefillStateByNode>(() => loadPrefillFromStorage());
 
   const index = useMemo(() => (data ? buildGraphIndex(data) : null), [data]);
   const nodes = useMemo(() => (data ? getGraphNodes(data) : []), [data]);
+
+  // useEffect(() => {
+  //   savePrefillToStorage(prefillByNode);
+  // }, [prefillByNode]);
 
   const mappingForNode: NodePrefillState =
     selectedNodeId ? (prefillByNode[selectedNodeId] ?? {}) : {};

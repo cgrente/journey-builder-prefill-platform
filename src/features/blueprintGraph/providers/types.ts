@@ -20,5 +20,6 @@ export interface PrefillSourceProvider {
     targetNodeId: string;
     directNodeIds: NodeId[];
     transitiveNodeIds: NodeId[];
+    depthMap: Map<NodeId, number>;
   }): SourceGroup[];
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildGraphIndex } from "../graphIndex";
-import { getAncestors, getDirectParents } from "../traversal";
-import type { BlueprintGraph } from "../../model/types";
+import { getAncestors, getDependencyDepths, getDirectParents } from "../traversal";
+import type { BlueprintGraph, NodeId } from "../../model/types";
 
 const graph: BlueprintGraph = {
   nodes: [
@@ -45,5 +45,24 @@ describe("blueprint graph traversal", () => {
     expect(new Set(ancestors)).toEqual(
       new Set(["form-D", "form-E", "form-B", "form-C", "form-A"])
     );
+  });
+
+  it ("getDependencyDepths returns correct depths for Form F", () => {
+    const index = buildGraphIndex(graph);
+    const depthMap = getDependencyDepths(index, "form-F");
+
+    let direct: NodeId[] = [];
+    let transitive: NodeId[] = [];
+
+    for ( const [nodeId, depth] of depthMap) {
+      if (depth === 1) {
+        direct.push(nodeId);
+      } else {
+        transitive.push(nodeId)
+      }
+    }
+    expect(direct).toEqual(["form-D", "form-E"])
+    expect(transitive).not.toContain(["form-F"])
+    expect(transitive).toEqual(["form-B", "form-C", "form-A"])
   });
 });

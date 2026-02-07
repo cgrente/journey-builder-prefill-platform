@@ -1,8 +1,10 @@
 import type { PrefillSource } from "../model/prefill";
-import type { BlueprintGraph } from "../model/types";
+import type { BlueprintGraph, NodeId } from "../model/types";
 import type { GraphIndex } from "../services/graphIndex";
 import { prefillSourceProviders } from "../providers/registry";
 import { useEffect } from "react";
+import { getCurrentUrl, type DependencyType } from "../../../shared/utils/urlTools";
+
 
 type SourceItem = {
   label: string;
@@ -14,7 +16,25 @@ type SourceGroup = {
   items: SourceItem[];
 };
 
+
+type HiddenSection = "direct" | "transitive" | "global";
+
+function getHiddenSections(depType: DependencyType): Set<HiddenSection> {
+  switch (depType) {
+    case "direct":
+      return new Set<HiddenSection>(["transitive", "global"]);
+    case "transitive":
+      return new Set<HiddenSection>(["direct", "global"]);
+    case "global":
+      return new Set<HiddenSection>(["direct", "transitive"]);
+    case "all":
+    default:
+      return new Set<HiddenSection>();
+  }
+}
+
 export function PrefillSourceModal({
+  depthMap,
   graph,
   index,
   targetNodeId,
@@ -23,6 +43,7 @@ export function PrefillSourceModal({
   onSelect,
   onClose,
 }: {
+  depthMap: Map<NodeId, number>
   graph: BlueprintGraph;
   index: GraphIndex;
   targetNodeId: string;
@@ -34,8 +55,21 @@ export function PrefillSourceModal({
   const labelOf = (id: string) => index.nodeById.get(id)?.data?.name ?? id;
 
   const groups: SourceGroup[] = prefillSourceProviders.flatMap((providers) =>
-    providers.getGroups({ graph, index, targetNodeId, directNodeIds, transitiveNodeIds })
+    providers.getGroups({ graph, index, targetNodeId, directNodeIds, transitiveNodeIds, depthMap})
   );
+
+  const dependencyType = getCurrentUrl();
+  const hidden = getHiddenSections(dependencyType);
+
+  const visibleGroups = groups.filter((group) => {
+    if (group.items.length === 0) return false;
+
+    const t = group.title.toLowerCase();
+    if (t.includes("direct dependency") && hidden.has("direct")) return false;
+    if (t.includes("transitive dependency") && hidden.has("transitive")) return false;
+
+    return true;
+  });
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -76,35 +110,34 @@ export function PrefillSourceModal({
         }}
       >
         {/* Header */}
-        <div
-          style={{
-            padding: "14px 16px",
-            borderBottom: "1px solid #e5e7eb",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 16 }}>Select data element to map</div>
-            <div style={{ fontSize: 12, color: "#6b7280" }}>
-              Target: <strong>{labelOf(targetNodeId)}</strong>
+          <div
+            style={{
+              padding: "14px 16px",
+              borderBottom: "1px solid #e5e7eb",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 12,
+            }}
+          >
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 16 }}>Select data element to map</div>
+              <div style={{ fontSize: 12, color: "#6b7280" }}>
+                Target: <strong>{labelOf(targetNodeId)}</strong>
+              </div>
             </div>
           </div>
-        </div>
+          
 
-        {/* Body */}
-        <div style={{ padding: 16, maxHeight: "70vh", overflow: "auto" }}>
-          {groups.length === 0 ? (
-            <div style={{ color: "#6b7280" }}>No sources available.</div>
-          ) : (
-            groups.map((group) => (
-              <Section key={group.title} title={group.title} items={group.items} onSelect={onSelect} />
-            ))
-          )}
-        </div>
-
+          <div style={{ padding: 16, maxHeight: "70vh", overflow: "auto" }}>
+            {visibleGroups.length === 0 ? (
+              <div style={{ color: "#6b7280" }}>No sources available.</div>
+            ) : (
+              visibleGroups.map((group) => (
+                <Section key={group.title} title={group.title} items={group.items} onSelect={onSelect} />
+              ))
+            )}
+          </div>
         {/* Footer */}
         <div
           style={{

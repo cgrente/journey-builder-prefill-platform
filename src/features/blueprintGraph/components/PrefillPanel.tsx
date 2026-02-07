@@ -3,7 +3,7 @@ import type { PrefillMapping, PrefillSource } from "../model/prefill";
 import type { BlueprintGraph } from "../model/types";
 import type { GraphIndex } from "../services/graphIndex";
 import { getFieldsForNode } from "../services/fields";
-import { partitionDependencies } from "../services/traversal";
+import { getDependencyDepths, partitionDependencies, partitionDependenciesWithDepth } from "../services/traversal";
 import { PrefillSourceModal } from "./PrefillSourceModal";
 
 export function PrefillPanel({
@@ -21,10 +21,16 @@ export function PrefillPanel({
   onSetMapping: (fieldKey: string, source: PrefillSource) => void;
   onClearMapping: (fieldKey: string) => void;
 }) {
-  const { direct, transitive } = partitionDependencies(index, selectedNodeId);
+  //const { direct, transitive } = partitionDependencies(index, selectedNodeId);
+  const { direct, transitive } = partitionDependenciesWithDepth(index, selectedNodeId);
 
   const fields = useMemo(
     () => getFieldsForNode(index, selectedNodeId),
+    [index, selectedNodeId]
+  );
+
+  const depthMap = useMemo(
+    () => getDependencyDepths(index, selectedNodeId),
     [index, selectedNodeId]
   );
 
@@ -148,6 +154,7 @@ export function PrefillPanel({
       {/* Modal */}
       {activeFieldKey ? (
         <PrefillSourceModal
+          depthMap={depthMap}
           graph={graph}
           index={index}
           targetNodeId={selectedNodeId}
